@@ -59,11 +59,6 @@ def reset_bikes():
     bike2.angle, bike2.velocity, bike2.reverse = directions['right']
 
 
-def kill_bike(bike):
-    bike.dead = True
-    bike.explosion_radius = 2
-    
-
 # Reset the bikes to start
 reset_bikes()
 
@@ -77,8 +72,8 @@ def update():
 
     for bike in (bike1, bike2):
     
-        x, y = bike.pos # pixel coordinates
-        i, j = screen_to_grid(x, y) # grid coordinates
+        x, y = bike.pos # old pixel coordinates
+        i, j = screen_to_grid(x, y) # old grid coordinates
     
         if bike.is_computer:
             old_dir = directions[bike.reverse][2]
@@ -90,20 +85,20 @@ def update():
         vx, vy = bike.velocity
         x += vx
         y += vy
-        bike.pos = x, y
+        bike.pos = x, y # new pixel coordinates
 
         i, j = screen_to_grid(x, y) # new grid coordinates
+        width, height = trails.shape
 
-        if i < 0 or j < 0 or i >= trails.shape[0] or j >= trails.shape[1]:
+        if i < 0 or j < 0 or i >= width or j >= height: 
             # Out of bounds! we crashed
-            kill_bike(bike)
+            bike.dead = True
             return
-        else:
-            current_value = trails[i,j]
+        trail_value = trails[i,j]
 
-        if current_value:
-            # We've already set this pixel, so this is a crash
-            kill_bike(bike)
+        if trail_value:
+            # Crash: We've already set this grid square as a trail
+            bike.dead = True
         else:
             trails[i,j]= bike.colour
 
